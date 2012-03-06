@@ -9,6 +9,11 @@
 
 // Import the interfaces
 #import "HelloWorldLayer.h"
+#import "CCTouchDispatcher.h"
+
+CCSprite *seeker1;
+//CCSprite *cocosGuy;
+CCSprite *megg;
 
 // HelloWorldLayer implementation
 @implementation HelloWorldLayer
@@ -34,21 +39,48 @@
 	// always call "super" init
 	// Apple recommends to re-assign "self" with the "super" return value
 	if( (self=[super init])) {
-		
-		// create and initialize a Label
-		CCLabelTTF *label = [CCLabelTTF labelWithString:@"Hello World" fontName:@"Marker Felt" fontSize:64];
-
-		// ask director the the window size
-		CGSize size = [[CCDirector sharedDirector] winSize];
+        seeker1 = [CCSprite spriteWithFile:@"seeker.png"];
+        seeker1.position = ccp(50,100);
+        [self addChild:seeker1];
+        
+        megg = [CCSprite spriteWithFile:@"megg.png"];
+        megg.position = ccp(200,300);
+        [self addChild:megg];
+        
+        
+        //schedule a repeatiing callback on every frame
+        [self schedule:@selector(nextFrame:)];
+        self.isTouchEnabled = YES;
 	
-		// position the label on the center of the screen
-		label.position =  ccp( size.width /2 , size.height/2 );
-		
-		// add the label as a child to this Layer
-		[self addChild: label];
 	}
 	return self;
 }
+
+- (void) registerWithTouchDispatcher{
+    [[CCTouchDispatcher sharedDispatcher] addTargetedDelegate:self priority:0 swallowsTouches: YES];
+}
+
+
+- (void) nextFrame:(ccTime)dt {
+    seeker1.position = ccp(seeker1.position.x + 100*dt, seeker1.position.y);
+    if (seeker1.position.x > 480 + 23){
+        seeker1.position = ccp(-32, seeker1.position.y);
+    }
+}
+
+- (BOOL)ccTouchBegan:(UITouch *)touch withEvent:(UIEvent *)event{
+    return YES;
+}
+
+- (void) ccTouchEnded:(UITouch *)touch withEvent:(UIEvent *)event{
+    CGPoint location = [self convertTouchToNodeSpace:touch];
+    [megg stopAllActions];
+    [megg runAction: [CCMoveTo actionWithDuration:1 position:location]];
+    
+    
+
+}
+
 
 // on "dealloc" you need to release all your retained objects
 - (void) dealloc
